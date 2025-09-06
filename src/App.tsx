@@ -25,6 +25,12 @@ function App() {
       title: 'React: The Essential Guide to Modern Web Development',
       artist: 'Development Tutorial',
       src: 'https://impressto.ca/audio/react_the_essential_guide_to_modern_web_development.m4a',
+    },
+    {
+      id: 'preloaded-4',
+      title: 'Redux: Taming the State Chaos',
+      artist: 'State Management Tutorial',
+      src: 'https://impressto.ca/audio/redux_taming_state_chaos.m4a',
     }
   ];
 

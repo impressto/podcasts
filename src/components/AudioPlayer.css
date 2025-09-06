@@ -6,6 +6,30 @@
   margin-bottom: 24px;
 }
 
+  @media (max-width: 500px) {
+    .audio-player {
+      max-width: 100vw;
+      width: 100vw;
+      border-radius: 0;
+      padding: 12px 4px;
+      box-shadow: none;
+    }
+    .player-controls {
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .progress-section {
+      flex-direction: column;
+      gap: 6px;
+      width: 100%;
+      min-width: 0;
+    }
+    .progress-bar {
+      width: 100%;
+      min-width: 0;
+    }
+  }
+
 .track-info {
   text-align: center;
   margin-bottom: 20px;
