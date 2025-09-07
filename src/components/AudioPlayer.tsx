@@ -9,6 +9,10 @@ interface AudioPlayerProps {
   onStop: () => void;
   onVolumeChange: (volume: number) => void;
   onSeek: (time: number) => void;
+  onNext?: () => void;
+  onPrevious?: () => void;
+  canGoNext?: boolean;
+  canGoPrevious?: boolean;
 }
 
 const formatTime = (time: number): string => {
@@ -25,6 +29,10 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   onStop,
   onVolumeChange,
   onSeek,
+  onNext,
+  onPrevious,
+  canGoNext = false,
+  canGoPrevious = false,
 }) => {
   const { isPlaying, currentTime, duration, volume, currentTrack } = playerState;
 
@@ -52,6 +60,14 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
 
       <div className="player-controls">
         <button
+          className="control-btn nav-btn"
+          onClick={onPrevious}
+          disabled={!currentTrack || !canGoPrevious}
+          title="Previous track"
+        >
+          ⏮️
+        </button>
+        <button
           className="control-btn"
           onClick={isPlaying ? onPause : onPlay}
           disabled={!currentTrack}
@@ -64,6 +80,14 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
           disabled={!currentTrack}
         >
           ⏹️
+        </button>
+        <button
+          className="control-btn nav-btn"
+          onClick={onNext}
+          disabled={!currentTrack || !canGoNext}
+          title="Next track"
+        >
+          ⏭️
         </button>
       </div>
 
