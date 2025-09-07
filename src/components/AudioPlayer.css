@@ -4,15 +4,23 @@
   padding: 24px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   margin-bottom: 24px;
+  width: 600px;
+  min-width: 600px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
 }
 
-  @media (max-width: 500px) {
+  @media (max-width: 650px) {
     .audio-player {
-      max-width: 100vw;
-      width: 100vw;
-      border-radius: 0;
-      padding: 12px 4px;
-      box-shadow: none;
+      width: 100%;
+      min-width: 100%;
+      max-width: 100%;
+      margin-left: 0;
+      margin-right: 0;
+      border-radius: 8px;
+      padding: 16px;
     }
     .player-controls {
       flex-wrap: wrap;
@@ -33,19 +41,43 @@
 .track-info {
   text-align: center;
   margin-bottom: 20px;
+  min-height: 80px;
+  max-height: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .track-title {
   margin: 0 0 8px 0;
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   color: #333;
   font-weight: 600;
+  line-height: 1.3;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  max-height: 40px;
 }
 
 .track-artist {
   margin: 0;
   color: #666;
   font-size: 1rem;
+  line-height: 1.2;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-height: 20px;
 }
 
 .player-controls {
@@ -54,6 +86,8 @@
   align-items: center;
   gap: 12px;
   margin-bottom: 20px;
+  width: 100%;
+  min-height: 80px;
 }
 
 .control-btn {
@@ -98,13 +132,18 @@
   align-items: center;
   gap: 12px;
   margin-bottom: 16px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .time-display {
   font-family: 'Courier New', monospace;
   font-size: 0.9rem;
   color: #666;
-  min-width: 40px;
+  min-width: 45px;
+  width: 45px;
+  text-align: center;
+  flex-shrink: 0;
 }
 
 .progress-bar {
