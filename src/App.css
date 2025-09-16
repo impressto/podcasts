@@ -37,6 +37,12 @@
   gap: 24px;
 }
 
+/* Standalone mode styles */
+.standalone-mode .app-main {
+  justify-content: center;
+  min-height: 70vh;
+}
+
 .loading-container,
 .error-container {
   background: #f8f9fa;

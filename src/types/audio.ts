@@ -1,9 +1,10 @@
 export interface AudioFile {
   id: string;
   title: string;
-  artist?: string;
+  genre?: string;
   src: string;
   duration?: number;
+  unlisted?: boolean;
 }
 
 export interface PlayerState {

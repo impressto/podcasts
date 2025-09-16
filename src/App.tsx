@@ -1,15 +1,36 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { AudioPlayer } from './components/AudioPlayer';
 import { Playlist } from './components/Playlist';
 import { useAudioPlayer } from './hooks/useAudioPlayer';
 import type { AudioFile } from './types/audio';
 import './App.css';
 
+// Function to check if we're in standalone mode (single podcast)
+// Using hash-based parameters instead of query parameters for better Nginx compatibility
+const isStandaloneMode = () => {
+  const hash = window.location.hash.substring(1);
+  
+  // Split hash by delimiters
+  const parts = hash.split(/[\/;]+/);
+  
+  // Check for standalone parameter
+  return parts.includes('standalone') || 
+         parts.includes('mode=standalone') || 
+         parts.some(part => part === 'standalone=true');
+};
+
 function App() {
-  const [tracks, setTracks] = useState<AudioFile[]>([]);
+  const [allTracks, setAllTracks] = useState<AudioFile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const { audioRef, playerState, play, pause, stop, setVolume, seek, loadTrack } = useAudioPlayer();
+  // Standalone mode determined by URL parameter
+  const [standalone, setStandalone] = useState(isStandaloneMode());
+  
+  // Filter out unlisted tracks for the public playlist
+  const tracks = useMemo(() => {
+    return allTracks.filter(track => !track.unlisted);
+  }, [allTracks]);
 
   // Fetch tracks from JSON file
   useEffect(() => {
@@ -28,7 +49,7 @@ function App() {
         }
         
         const data = await response.json();
-        setTracks(data);
+        setAllTracks(data);
         setIsLoading(false);
       } catch (error) {
         console.error('Error fetching tracks:', error);
@@ -43,62 +64,151 @@ function App() {
   // Auto-select track based on URL hash or default to first track
   useEffect(() => {
     // Don't try to load tracks if they're not ready yet
-    if (isLoading || tracks.length === 0) return;
+    if (isLoading || allTracks.length === 0) return;
+
+    const parseHash = () => {
+      // Get the hash without the # symbol
+      const fullHash = window.location.hash.substring(1);
+      
+      // Split by / or ; to get different parts
+      const hashParts = fullHash.split(/[\/;]+/);
+      
+      // Check for track ID or standalone mode
+      let trackId = null;
+      let standalone = false;
+      
+      for (const part of hashParts) {
+        // Track identifier checks
+        if (part.startsWith('track-') || part.startsWith('preloaded-') || part.startsWith('unlisted-')) {
+          trackId = part;
+        } else if (part.startsWith('track=')) {
+          trackId = part.split('=')[1];
+        }
+        
+        // Standalone mode checks
+        if (part === 'standalone' || 
+            part === 'mode=standalone' || 
+            part === 'standalone=true') {
+          standalone = true;
+        }
+      }
+      
+      return { trackId, standalone };
+    };
+
+    const { trackId, standalone: hashStandalone } = parseHash();
+    
+    // Update standalone state if it changed
+    if (hashStandalone !== standalone) {
+      setStandalone(hashStandalone);
+    }
+    
+    if (!trackId && standalone) {
+      // In standalone mode, we must have a track identifier
+      setLoadError("No track specified. Please use a URL with a track hash.");
+      return;
+    }
 
     const loadTrackFromHash = () => {
-      const hash = window.location.hash.substring(1); // Remove the # symbol
-      let trackToLoad = tracks[0]; // Default to first track
+      const { trackId } = parseHash();
+      let trackToLoad: AudioFile | undefined = undefined;
 
-      if (hash) {
-        // Try to find track by hash
-        if (hash === 'track-1' && tracks.length >= 1) {
-          trackToLoad = tracks[0];
-        } else if (hash === 'track-2' && tracks.length >= 2) {
-          trackToLoad = tracks[1];
-        } else if (hash === 'track-3' && tracks.length >= 3) {
-          trackToLoad = tracks[2];
-        } else if (hash === 'track-4' && tracks.length >= 4) {
-          trackToLoad = tracks[3];
-        } else if (hash === 'track-5' && tracks.length >= 5) {
-          trackToLoad = tracks[4];
-        } else if (hash === 'track-6' && tracks.length >= 6) {
-          trackToLoad = tracks[5];
+      if (trackId) {
+        // First check if it's a direct ID in the hash - including unlisted tracks
+        trackToLoad = allTracks.find(track => track.id === trackId);
+
+        // If not found by direct ID, try the track-N format
+        if (!trackToLoad) {
+          // For track-N format, only consider public tracks for normal track numbers
+          const publicTracks = allTracks.filter(track => !track.unlisted);
+          
+          if (trackId === 'track-1' && publicTracks.length >= 1) {
+            trackToLoad = publicTracks[0];
+          } else if (trackId === 'track-2' && publicTracks.length >= 2) {
+            trackToLoad = publicTracks[1];
+          } else if (trackId === 'track-3' && publicTracks.length >= 3) {
+            trackToLoad = publicTracks[2];
+          } else if (trackId === 'track-4' && publicTracks.length >= 4) {
+            trackToLoad = publicTracks[3];
+          } else if (trackId === 'track-5' && publicTracks.length >= 5) {
+            trackToLoad = publicTracks[4];
+          } else if (trackId === 'track-6' && publicTracks.length >= 6) {
+            trackToLoad = publicTracks[5];
+          }
         }
+      }
+
+      if (standalone && !trackToLoad) {
+        setLoadError(`Track not found: ${trackId || 'None specified'}`);
+        return;
+      }
+
+      // In non-standalone mode, default to first track if hash not found
+      if (!trackToLoad && !standalone) {
+        // Make sure we're only defaulting to a public track
+        trackToLoad = tracks[0];
       }
 
       // Only load the track once on initial mount
       if (trackToLoad && !playerState.currentTrack) {
-        loadTrack(trackToLoad);
-        console.log('Auto-loaded track from hash:', hash || 'default');
+        // Check if we're trying to load an unlisted track in non-standalone mode
+        if (trackToLoad.unlisted && !standalone && !trackId) {
+          // If trying to auto-load an unlisted track without specific hash, choose a public one instead
+          const firstPublicTrack = tracks[0];
+          if (firstPublicTrack) {
+            loadTrack(firstPublicTrack);
+          }
+        } else {
+          loadTrack(trackToLoad);
+        }
+        
+        console.log('Auto-loaded track from hash:', trackId || 'default');
       }
     };
 
     // Load initial track
     loadTrackFromHash();
 
+    // Define handler for hash changes
+    const handleHashChange = () => {
+      const { standalone: newStandaloneValue } = parseHash();
+      
+      // Update standalone state if needed
+      if (newStandaloneValue !== standalone) {
+        setStandalone(newStandaloneValue);
+      }
+      
+      loadTrackFromHash();
+    };
+
     // Listen for hash changes (browser back/forward)
-    window.addEventListener('hashchange', loadTrackFromHash);
+    window.addEventListener('hashchange', handleHashChange);
 
     return () => {
-      window.removeEventListener('hashchange', loadTrackFromHash);
+      window.removeEventListener('hashchange', handleHashChange);
     };
-  }, [tracks, isLoading, loadTrack, playerState.currentTrack]); // Added playerState.currentTrack to check if a track is loaded
+  }, [allTracks, tracks, isLoading, loadTrack, playerState.currentTrack, standalone]); // Updated dependencies
 
   // Update URL hash when track changes
   const handleTrackSelect = (track: AudioFile) => {
     console.log('Track selected:', track.title);
 
     // Update URL hash based on track
-    let hash = '';
+    let newTrackId = '';
     
     // Get the track number from the id (preloaded-X)
     if (track.id.startsWith('preloaded-')) {
       const trackNumber = track.id.split('-')[1];
-      hash = `track-${trackNumber}`;
+      newTrackId = `track-${trackNumber}`;
+    } else {
+      // For other tracks, use their ID directly
+      newTrackId = track.id;
     }
 
-    if (hash) {
-      window.history.replaceState(null, '', `#${hash}`);
+    if (newTrackId) {
+      // If we're in standalone mode, preserve that parameter
+      const newHash = standalone ? `track=${newTrackId};standalone=true` : `track=${newTrackId}`;
+      window.history.replaceState(null, '', `#${newHash}`);
     }
 
     loadTrack(track); // Auto-play is true by default
@@ -163,7 +273,7 @@ function App() {
   }, [tracks, playerState, play, pause, handleNext, handlePrevious, setVolume, canGoNext, canGoPrevious]);
 
   return (
-    <div className="app">
+    <div className={`app ${standalone ? 'standalone-mode' : ''}`}>
       <audio
         ref={audioRef}
         preload="metadata"
@@ -188,30 +298,32 @@ function App() {
               onStop={stop}
               onVolumeChange={setVolume}
               onSeek={seek}
-              onNext={handleNext}
-              onPrevious={handlePrevious}
-              canGoNext={canGoNext}
-              canGoPrevious={canGoPrevious}
+              onNext={standalone ? undefined : handleNext}
+              onPrevious={standalone ? undefined : handlePrevious}
+              canGoNext={standalone ? false : canGoNext}
+              canGoPrevious={standalone ? false : canGoPrevious}
             />
 
-            <Playlist
-              tracks={tracks}
-              currentTrack={playerState.currentTrack}
-              onTrackSelect={handleTrackSelect}
-            />
+            {!standalone && (
+              <Playlist
+                tracks={tracks}
+                currentTrack={playerState.currentTrack}
+                onTrackSelect={handleTrackSelect}
+              />
+            )}
           </>
         )}
       </main>
 
       <footer className="app-footer">
         <p>Streaming audio content from impressto.ca</p>
-        {tracks.length > 0 && (
+        {tracks.length > 0 && !standalone && (
           <>
             <p style={{ fontSize: '0.8rem', opacity: 0.7, marginTop: '8px' }}>
               Direct links: 
               {tracks.map((_, index) => (
                 <span key={index}>
-                  <a href={`#track-${index + 1}`} style={{ color: 'inherit', marginLeft: '5px' }}>
+                  <a href={`#track=track-${index + 1}`} style={{ color: 'inherit', marginLeft: '5px' }}>
                     #{index + 1}
                   </a>
                   {index < tracks.length - 1 ? ',' : ''}
@@ -222,6 +334,13 @@ function App() {
               Keyboard shortcuts: Space (Play/Pause), ← → (Previous/Next), ↑ ↓ (Volume)
             </p>
           </>
+        )}
+        {standalone && playerState.currentTrack && (
+          <p style={{ fontSize: '0.8rem', opacity: 0.7, marginTop: '8px' }}>
+            Standalone podcast: {playerState.currentTrack.title}
+            {playerState.currentTrack.genre && ` - ${playerState.currentTrack.genre}`}
+            {playerState.currentTrack.unlisted && ' (Unlisted)'}
+          </p>
         )}
       </footer>
     </div>

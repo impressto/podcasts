@@ -67,7 +67,7 @@
   max-height: 40px;
 }
 
-.track-artist {
+.track-genre {
   margin: 0;
   color: #666;
   font-size: 1rem;
@@ -223,6 +223,20 @@
   color: #666;
   font-style: italic;
   animation: pulse 1.5s infinite;
+}
+
+.loading-indicator {
+  font-size: 0.8rem;
+  color: #666;
+  font-style: italic;
+  animation: pulse 1.5s infinite;
+}
+
+.unlisted-indicator {
+  font-size: 0.8rem;
+  color: #6c757d;
+  font-style: italic;
+  margin-left: 5px;
 }
 
 .load-progress-container {

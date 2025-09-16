@@ -64,9 +64,10 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
           {currentTrack?.title || 'No track selected'}
           {isLoading && <span className="loading-indicator"> (Loading...)</span>}
           {isBuffering && !isLoading && <span className="buffering-indicator"> (Buffering...)</span>}
+          {currentTrack?.unlisted && <span className="unlisted-indicator"> (Unlisted)</span>}
         </h3>
-        {currentTrack?.artist && (
-          <p className="track-artist">{currentTrack.artist}</p>
+        {currentTrack?.genre && (
+          <p className="track-genre">{currentTrack.genre}</p>
         )}
         {error && (
           <p className="error-message">{error}</p>

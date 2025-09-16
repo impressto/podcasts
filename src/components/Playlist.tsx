@@ -28,17 +28,20 @@ export const Playlist: React.FC<PlaylistProps> = ({
           </div>
         ) : (
           tracks.map((track) => (
-                          <div
-                key={track.id}
-                className={`track-item ${
-                  currentTrack?.id === track.id ? 'active' : ''
-                } ${track.id.startsWith('preloaded-') ? 'preloaded' : ''}`}
-                onClick={() => onTrackSelect(track)}
-              >
+            <div
+              key={track.id}
+              className={`track-item ${
+                currentTrack?.id === track.id ? 'active' : ''
+              } ${track.id.startsWith('preloaded-') ? 'preloaded' : ''} ${track.unlisted ? 'unlisted' : ''}`}
+              onClick={() => onTrackSelect(track)}
+            >
               <div className="track-details">
-                <div className="track-name">{track.title}</div>
-                {track.artist && (
-                  <div className="track-meta">{track.artist}</div>
+                <div className="track-name">
+                  {track.title}
+                  {track.unlisted && <span className="track-unlisted-badge">Unlisted</span>}
+                </div>
+                {track.genre && (
+                  <div className="track-meta">{track.genre}</div>
                 )}
               </div>
               <div className="track-actions">
