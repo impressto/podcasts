@@ -15,6 +15,8 @@
 @media (max-width: 480px) {
   .app {
     padding: 2ch;
+    max-width: 100%;
+    width: 100%;
   }
 }
 
@@ -78,6 +80,25 @@
   margin-bottom: 24px;
   width: 800px;
   text-align: center;
+}
+
+@media (max-width: 850px) {
+  .loading-container,
+  .error-container {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .loading-container,
+  .error-container {
+    width: 95%;
+    max-width: 95%;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 16px;
+  }
 }
 
 .error-container {

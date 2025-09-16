@@ -42,6 +42,10 @@
       width: 100%;
       min-width: 0;
     }
+    .volume-section {
+      width: 100%;
+      justify-content: center;
+    }
   }
   
   /* Additional adjustments for smaller mobile screens */
@@ -49,10 +53,17 @@
     .audio-player {
       padding: 12px 10px;
       margin-bottom: 16px;
+      width: 95%;
+      min-width: 0;
+      max-width: 95%;
+      margin-left: auto;
+      margin-right: auto;
     }
     .player-controls {
       gap: 6px;
       min-height: 60px;
+      justify-content: center;
+      flex-wrap: wrap;
     }
     .control-btn {
       width: 50px;
@@ -71,6 +82,30 @@
     }
     .volume-section {
       margin-top: 8px;
+    }
+  }
+  
+  /* Extra adjustments for very narrow screens */
+  @media (max-width: 360px) {
+    .audio-player {
+      width: 90%;
+      max-width: 90%;
+      padding: 10px 8px;
+    }
+    .control-btn {
+      width: 45px;
+      height: 45px;
+      font-size: 18px;
+    }
+    .control-btn.nav-btn {
+      width: 36px;
+      height: 36px;
+      font-size: 14px;
+    }
+    .control-btn.qr-btn {
+      width: 34px;
+      height: 34px;
+      font-size: 14px;
     }
   }
 
@@ -92,7 +127,6 @@
   .track-info {
     margin-bottom: 16px;
     min-height: 70px;
-    max-height: 70px;
   }
   
   .track-title {
@@ -124,7 +158,6 @@
   -webkit-line-clamp: 2;
   line-clamp: 2;
   -webkit-box-orient: vertical;
-  max-height: 40px;
 }
 
 .track-genre {
