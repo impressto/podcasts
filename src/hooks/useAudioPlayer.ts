@@ -54,6 +54,12 @@ export const useAudioPlayer = () => {
   };
 
   const loadTrack = (track: AudioFile) => {
+    // Skip if trying to load the same track that's already loaded
+    if (playerState.currentTrack?.id === track.id) {
+      console.log('Track already loaded:', track.title);
+      return;
+    }
+    
     console.log('Loading track:', track); // Debug log
     if (audioRef.current) {
       // Stop current playback

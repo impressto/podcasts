@@ -27,9 +27,37 @@
 
 .app-main {
   flex: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 24px;
+}
+
+.loading-container,
+.error-container {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
+  width: 600px;
+  text-align: center;
+}
+
+.error-container {
+  background-color: rgba(211, 47, 47, 0.1);
+  color: #d32f2f;
+}
+
+@media (max-width: 650px) {
+  .loading-container,
+  .error-container {
+    width: 100%;
+  }
 }
 
 .app-footer {
