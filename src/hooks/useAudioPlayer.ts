@@ -31,13 +31,29 @@ export const useAudioPlayer = () => {
         console.error('Play failed:', errorMessage);
         
         // Handle specific errors
-        if (error instanceof DOMException && error.name === 'NotAllowedError') {
-          setPlayerState(prev => ({ 
-            ...prev, 
-            isPlaying: false, 
-            isLoading: false,
-            error: 'Playback requires user interaction with the page first' 
-          }));
+        if (error instanceof DOMException) {
+          if (error.name === 'NotAllowedError') {
+            setPlayerState(prev => ({ 
+              ...prev, 
+              isPlaying: false, 
+              isLoading: false,
+              error: 'Browser autoplay policy prevents automatic playback. Please click the play button to listen.' 
+            }));
+          } else if (error.name === 'AbortError') {
+            setPlayerState(prev => ({
+              ...prev,
+              isPlaying: false,
+              isLoading: false,
+              error: 'Playback was interrupted. Please try again.'
+            }));
+          } else {
+            setPlayerState(prev => ({
+              ...prev,
+              isPlaying: false,
+              isLoading: false,
+              error: `Playback issue: ${error.name}. Please try again or use a different browser.`
+            }));
+          }
         } else {
           setPlayerState(prev => ({ 
             ...prev, 
@@ -142,7 +158,29 @@ export const useAudioPlayer = () => {
 
     const handleError = (e: Event) => {
       console.error('Audio error:', e);
-      const errorMessage = audio.error ? `Error: ${audio.error.message || audio.error.code}` : 'Unknown error';
+      
+      let errorMessage = 'Unable to play this podcast';
+      
+      if (audio.error) {
+        // Map media error codes to user-friendly messages
+        switch (audio.error.code) {
+          case MediaError.MEDIA_ERR_ABORTED:
+            errorMessage = 'Playback was aborted. Please try again.';
+            break;
+          case MediaError.MEDIA_ERR_NETWORK:
+            errorMessage = 'A network error prevented loading the podcast. Please check your connection and try again.';
+            break;
+          case MediaError.MEDIA_ERR_DECODE:
+            errorMessage = 'The podcast file appears to be corrupted or in an unsupported format.';
+            break;
+          case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+            errorMessage = 'This podcast format is not supported by your browser or the source is unavailable.';
+            break;
+          default:
+            errorMessage = `Error playing podcast: ${audio.error.message || 'Unknown error (code ' + audio.error.code + ')'}`;
+        }
+      }
+      
       setPlayerState(prev => ({ 
         ...prev, 
         isPlaying: false,

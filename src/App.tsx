@@ -43,17 +43,44 @@ function App() {
         const tracksUrl = import.meta.env.VITE_APP_IMPRESSTO_TRACKS_URL || '/homelab/tracks.json';
         console.log('Fetching tracks from:', tracksUrl);
         
-        const response = await fetch(tracksUrl);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch tracks: ${response.status} ${response.statusText}`);
-        }
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
         
-        const data = await response.json();
-        setAllTracks(data);
-        setIsLoading(false);
+        try {
+          const response = await fetch(tracksUrl, { 
+            signal: controller.signal,
+            headers: { 'Cache-Control': 'no-cache' } 
+          });
+          
+          clearTimeout(timeoutId);
+          
+          if (!response.ok) {
+            if (response.status === 404) {
+              throw new Error('Podcast data not found. The resource may have been moved or deleted.');
+            } else if (response.status >= 500) {
+              throw new Error('Server error. Our podcast server is currently experiencing issues.');
+            } else {
+              throw new Error(`HTTP error: ${response.status} ${response.statusText}`);
+            }
+          }
+          
+          const data = await response.json();
+          
+          if (!Array.isArray(data) || data.length === 0) {
+            throw new Error('No podcast tracks available.');
+          }
+          
+          setAllTracks(data);
+          setIsLoading(false);
+        } catch (fetchError) {
+          if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+            throw new Error('Request timed out. Please check your connection and try again.');
+          }
+          throw fetchError;
+        }
       } catch (error) {
         console.error('Error fetching tracks:', error);
-        setLoadError(error instanceof Error ? error.message : 'Unknown error');
+        setLoadError(error instanceof Error ? error.message : 'Unknown error loading podcasts');
         setIsLoading(false);
       }
     };
@@ -287,7 +314,22 @@ function App() {
           </div>
         ) : loadError ? (
           <div className="error-container">
-            <p>Error loading tracks: {loadError}</p>
+            <h3 className="error-title">Unable to Load Podcasts</h3>
+            <p className="error-message">
+              We're having trouble loading the podcast content. This might be due to:
+              <br />
+              • A temporary network issue
+              <br />
+              • Server maintenance
+              <br />
+              • The content source being unavailable
+            </p>
+            <div className="error-details" style={{ fontSize: '0.85rem', opacity: 0.7, marginBottom: '16px' }}>
+              Technical details: {loadError}
+            </div>
+            <button onClick={() => window.location.reload()}>
+              Refresh Page
+            </button>
           </div>
         ) : (
           <>
