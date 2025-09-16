@@ -11,6 +11,13 @@
   padding-top: 5px;
 }
 
+/* Mobile adjustments */
+@media (max-width: 480px) {
+  .app {
+    padding: 2ch;
+  }
+}
+
 .app-header {
   text-align: center;
   margin-bottom: 32px;
@@ -47,6 +54,19 @@
   padding-top: 5px;
   margin-top: 0;
   gap: 10px;
+}
+
+/* Mobile adjustments for app-main */
+@media (max-width: 480px) {
+  .app-main {
+    padding: 10px 2px;
+    gap: 16px;
+  }
+  
+  .standalone-mode .app-main {
+    padding-top: 3px;
+    gap: 8px;
+  }
 }
 
 .loading-container,

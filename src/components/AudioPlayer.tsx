@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { PlayerState } from '../types/audio';
+import { QRCodeSVG } from 'qrcode.react';
 import './AudioPlayer.css';
 
 interface AudioPlayerProps {
@@ -34,6 +35,8 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   canGoNext = false,
   canGoPrevious = false,
 }) => {
+  const [showQRCode, setShowQRCode] = useState(false);
+  
   const { 
     isPlaying, 
     currentTime, 
@@ -56,6 +59,17 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   };
 
   const progressPercentage = duration > 0 ? (currentTime / duration) * 100 : 0;
+
+  // Get the current URL for the QR code
+  const getCurrentUrl = () => {
+    if (!currentTrack) return window.location.href;
+    
+    // Get the base URL (remove hash if present)
+    const baseUrl = window.location.href.split('#')[0];
+    
+    // Construct the URL with the track ID and standalone mode
+    return `${baseUrl}#track=${currentTrack.id};standalone`;
+  };
 
   return (
     <div className="audio-player">
@@ -112,6 +126,14 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
         >
           ⏭️
         </button>
+        <button
+          className="control-btn qr-btn"
+          onClick={() => setShowQRCode(!showQRCode)}
+          disabled={!currentTrack}
+          title="Show QR Code for mobile"
+        >
+          📱
+        </button>
       </div>
 
       <div className="progress-section">
@@ -139,6 +161,17 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
           onChange={handleVolumeChange}
         />
       </div>
+      
+      {showQRCode && (
+        <div className="qr-code-popup">
+          <div className="qr-code-container">
+            <button className="close-qr" onClick={() => setShowQRCode(false)}>✖</button>
+            <h3>Scan to listen on mobile</h3>
+            <QRCodeSVG value={getCurrentUrl()} size={150} />
+            <p className="qr-url">{getCurrentUrl()}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
