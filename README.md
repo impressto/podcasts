@@ -1,17 +1,22 @@
 # Impressto Podcast Player
 
-A React podcast player to list some of the latest poscasts I've generated with NotebookLM.
+A React podcast player to list some of the latest podcasts I've generated with NotebookLM.
 
 ![player](https://github.com/user-attachments/assets/ef9fce87-5360-445e-81e0-27bd4793b574)
 
 ## Features
 
 - 🎵 **Multi-format Support**: Play MP3, M4A, WAV, and other common audio formats
-- 📁 **File Upload**: Drag and drop or browse to upload multiple audio files
+- 📁 **JSON Configuration**: Easy track management via external tracks.json file
 - 🎛️ **Full Controls**: Play, pause, stop, volume control, and seeking
+- ⌨️ **Keyboard Shortcuts**: Control playback using keyboard shortcuts
 - 📋 **Playlist Management**: Organized track list with current song highlighting
+- 🔄 **Loading Indicators**: Visual feedback for buffering and loading states
 - 📱 **Responsive Design**: Works on desktop and mobile devices
 - 🎨 **Modern UI**: Clean, intuitive interface with smooth animations
+- 🌐 **Environment Configuration**: Easily configurable via environment variables
+- 🔗 **Direct Track Links**: Share links to specific tracks using URL hash
+- 🚫 **Error Handling**: Graceful handling of playback errors and browser restrictions
 
 ## Getting Started
 
@@ -35,7 +40,21 @@ Start the development server:
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173) to view the app in your browser.
+Open [http://localhost:5173/homelab/](http://localhost:5173/homelab/) to view the app in your browser.
+
+### Environment Configuration
+
+Create a `.env` file in the root directory to configure the application:
+
+```
+# URL for the tracks.json file
+VITE_APP_IMPRESSTO_TRACKS_URL=https://impressto.ca/podcasts/public/tracks.json
+```
+
+For development, you can use a local URL:
+```
+VITE_APP_IMPRESSTO_TRACKS_URL=/homelab/tracks.json
+```
 
 ### Building for Production
 
@@ -51,11 +70,15 @@ npm run preview
 
 ## Usage
 
-1. **Upload Audio Files**: Click "Add Audio Files" button to upload one or more audio files
+1. **Track Configuration**: Edit the `public/tracks.json` file to add or modify tracks
 2. **Select Track**: Click on any track in the playlist to load it
 3. **Control Playback**: Use the play/pause/stop buttons to control audio playback
 4. **Adjust Volume**: Use the volume slider to control audio level
 5. **Seek**: Click on the progress bar to jump to any position in the track
+6. **Keyboard Controls**: 
+   - Space: Play/Pause
+   - Left/Right Arrow: Previous/Next track
+   - Up/Down Arrow: Volume control
 
 ## Supported Audio Formats
 
@@ -76,17 +99,38 @@ npm run preview
 ## Project Structure
 
 ```
-src/
-├── components/         # React components
-│   ├── AudioPlayer.tsx # Main audio player controls
-│   └── Playlist.tsx    # Track list and file upload
-├── hooks/             # Custom React hooks
-│   └── useAudioPlayer.ts # Audio player logic
-├── types/             # TypeScript type definitions
-│   └── audio.ts       # Audio-related types
-├── App.tsx            # Main application component
-├── App.css            # Application styles
-└── index.css          # Global styles
+/
+├── public/
+│   ├── tracks.json      # Track configuration file
+│   └── vite.svg         # Vite logo
+├── src/
+│   ├── components/      # React components
+│   │   ├── AudioPlayer.tsx # Main audio player controls
+│   │   └── Playlist.tsx    # Track list component
+│   ├── hooks/           # Custom React hooks
+│   │   └── useAudioPlayer.ts # Audio player logic
+│   ├── types/           # TypeScript type definitions
+│   │   └── audio.ts     # Audio-related types
+│   ├── App.tsx          # Main application component
+│   ├── App.css          # Application styles
+│   └── index.css        # Global styles
+└── .env                 # Environment configuration
+```
+
+## JSON Configuration Format
+
+The `tracks.json` file follows this format:
+
+```json
+[
+  {
+    "id": "preloaded-1",
+    "title": "Track Title",
+    "artist": "Artist Name",
+    "src": "https://example.com/audio/track.m4a"
+  },
+  ...
+]
 ```
 
 ## Contributing

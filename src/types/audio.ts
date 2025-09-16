@@ -12,4 +12,8 @@ export interface PlayerState {
   duration: number;
   volume: number;
   currentTrack: AudioFile | null;
+  isBuffering: boolean;
+  isLoading: boolean;
+  loadProgress: number;
+  error: string | null;
 }

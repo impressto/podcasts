@@ -121,6 +121,47 @@ function App() {
     }
   };
 
+  // Calculate canGoNext and canGoPrevious
+  const canGoNext = tracks.findIndex(track => track.id === playerState.currentTrack?.id) < tracks.length - 1;
+  const canGoPrevious = tracks.findIndex(track => track.id === playerState.currentTrack?.id) > 0;
+
+  // Add keyboard controls
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only handle keyboard shortcuts if we have tracks loaded
+      if (tracks.length === 0 || !playerState.currentTrack) return;
+      
+      switch (e.key) {
+        case ' ': // Space bar
+          e.preventDefault();
+          playerState.isPlaying ? pause() : play();
+          break;
+        case 'ArrowRight': // Right arrow
+          if (canGoNext) handleNext();
+          break;
+        case 'ArrowLeft': // Left arrow
+          if (canGoPrevious) handlePrevious();
+          break;
+        case 'ArrowUp': // Up arrow
+          e.preventDefault();
+          setVolume(Math.min(1, playerState.volume + 0.1));
+          break;
+        case 'ArrowDown': // Down arrow
+          e.preventDefault();
+          setVolume(Math.max(0, playerState.volume - 0.1));
+          break;
+        default:
+          break;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [tracks, playerState, play, pause, handleNext, handlePrevious, setVolume, canGoNext, canGoPrevious]);
+
   return (
     <div className="app">
       <audio
@@ -149,8 +190,8 @@ function App() {
               onSeek={seek}
               onNext={handleNext}
               onPrevious={handlePrevious}
-              canGoNext={tracks.findIndex(track => track.id === playerState.currentTrack?.id) < tracks.length - 1}
-              canGoPrevious={tracks.findIndex(track => track.id === playerState.currentTrack?.id) > 0}
+              canGoNext={canGoNext}
+              canGoPrevious={canGoPrevious}
             />
 
             <Playlist
@@ -165,17 +206,22 @@ function App() {
       <footer className="app-footer">
         <p>Streaming audio content from impressto.ca</p>
         {tracks.length > 0 && (
-          <p style={{ fontSize: '0.8rem', opacity: 0.7, marginTop: '8px' }}>
-            Direct links: 
-            {tracks.map((_, index) => (
-              <span key={index}>
-                <a href={`#track-${index + 1}`} style={{ color: 'inherit', marginLeft: '5px' }}>
-                  #{index + 1}
-                </a>
-                {index < tracks.length - 1 ? ',' : ''}
-              </span>
-            ))}
-          </p>
+          <>
+            <p style={{ fontSize: '0.8rem', opacity: 0.7, marginTop: '8px' }}>
+              Direct links: 
+              {tracks.map((_, index) => (
+                <span key={index}>
+                  <a href={`#track-${index + 1}`} style={{ color: 'inherit', marginLeft: '5px' }}>
+                    #{index + 1}
+                  </a>
+                  {index < tracks.length - 1 ? ',' : ''}
+                </span>
+              ))}
+            </p>
+            <p style={{ fontSize: '0.8rem', opacity: 0.7, marginTop: '8px' }}>
+              Keyboard shortcuts: Space (Play/Pause), ← → (Previous/Next), ↑ ↓ (Volume)
+            </p>
+          </>
         )}
       </footer>
     </div>

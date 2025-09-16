@@ -34,7 +34,17 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   canGoNext = false,
   canGoPrevious = false,
 }) => {
-  const { isPlaying, currentTime, duration, volume, currentTrack } = playerState;
+  const { 
+    isPlaying, 
+    currentTime, 
+    duration, 
+    volume, 
+    currentTrack, 
+    isBuffering, 
+    isLoading,
+    loadProgress,
+    error
+  } = playerState;
 
   const handleProgressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTime = (parseFloat(e.target.value) / 100) * duration;
@@ -52,9 +62,19 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
       <div className="track-info">
         <h3 className="track-title">
           {currentTrack?.title || 'No track selected'}
+          {isLoading && <span className="loading-indicator"> (Loading...)</span>}
+          {isBuffering && !isLoading && <span className="buffering-indicator"> (Buffering...)</span>}
         </h3>
         {currentTrack?.artist && (
           <p className="track-artist">{currentTrack.artist}</p>
+        )}
+        {error && (
+          <p className="error-message">{error}</p>
+        )}
+        {isLoading && loadProgress > 0 && loadProgress < 100 && (
+          <div className="load-progress-container">
+            <div className="load-progress-bar" style={{ width: `${loadProgress}%` }}></div>
+          </div>
         )}
       </div>
 
@@ -63,7 +83,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
           className="control-btn nav-btn"
           onClick={onPrevious}
           disabled={!currentTrack || !canGoPrevious}
-          title="Previous track"
+          title="Previous track (Left arrow)"
         >
           ⏮️
         </button>
@@ -71,6 +91,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
           className="control-btn"
           onClick={isPlaying ? onPause : onPlay}
           disabled={!currentTrack}
+          title={isPlaying ? "Pause (Space)" : "Play (Space)"}
         >
           {isPlaying ? '⏸️' : '▶️'}
         </button>
@@ -78,6 +99,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
           className="control-btn"
           onClick={onStop}
           disabled={!currentTrack}
+          title="Stop"
         >
           ⏹️
         </button>
@@ -85,7 +107,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
           className="control-btn nav-btn"
           onClick={onNext}
           disabled={!currentTrack || !canGoNext}
-          title="Next track"
+          title="Next track (Right arrow)"
         >
           ⏭️
         </button>
